@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Extraction Manager</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      background: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      height: 56px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+
+    header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: .3px;
+      white-space: nowrap;
+    }
+
+    .header-spacer { flex: 1; }
+
+    .operator-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .operator-bar label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    #operator-select {
+      padding: 5px 28px 5px 10px;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      background: #334155;
+      color: #f8fafc;
+      font-size: 13px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+
+    #operator-select:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 1px;
+    }
+
+    .credit-display {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: #334155;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .credit-display strong {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 960px;
+      margin: 32px auto;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      padding: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    /* ── Form ── */
+    .form-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+    }
+
+    .form-field label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    input[type="url"] {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #1e293b;
+      width: 100%;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    input[type="url"]:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+    }
+
+    input[type="url"]::placeholder { color: #94a3b8; }
+
+    /* ── Buttons ── */
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s, opacity .15s;
+      white-space: nowrap;
+    }
+
+    button:focus-visible {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+
+    button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
+
+    .btn-start {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+    .btn-start:hover:not(:disabled) { background: #bbf7d0; }
+
+    .btn-stop {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    .btn-stop:hover:not(:disabled) { background: #fecaca; }
+
+    .btn-delete {
+      background: #fff;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    .btn-delete:hover:not(:disabled) { background: #fee2e2; }
+
+    .btn-delete-confirm {
+      background: #b91c1c;
+      color: #fff;
+    }
+    .btn-delete-confirm:hover { background: #991b1b; }
+
+    .confirm-text {
+      font-size: 11px;
+      color: #64748b;
+      white-space: nowrap;
+      align-self: center;
+    }
+
+    /* ── Alert messages ── */
+    .msg {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .msg:not(:empty) { display: block; }
+
+    .msg[data-type="error"]   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .msg[data-type="success"] { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .msg[data-type="info"]    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+    /* ── Table ── */
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    #jobs-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    #jobs-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #64748b;
+      padding: 10px 12px;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    #jobs-table td {
+      padding: 12px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+
+    #jobs-table tbody tr:last-child td { border-bottom: none; }
+    #jobs-table tbody tr:hover { background: #f8fafc; }
+
+    .col-id    { width: 110px; }
+    .col-url   { max-width: 280px; }
+    .col-status { width: 110px; }
+    .col-pages  { width: 80px; text-align: right; }
+    .col-actions { width: 210px; text-align: right; }
+
+    #jobs-table td.col-url {
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #jobs-table td.col-url a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    #jobs-table td.col-url a:hover { text-decoration: underline; }
+
+    #jobs-table td.col-pages { text-align: right; color: #475569; }
+    #jobs-table td.col-actions { text-align: right; }
+
+    .job-id-code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .actions-cell button {
+      padding: 5px 12px;
+      font-size: 12px;
+    }
+
+    /* ── Status badges ── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+
+    .status-badge::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-pending  { background: #f1f5f9; color: #64748b; }
+    .status-pending::before  { background: #94a3b8; }
+
+    .status-running  { background: #eff6ff; color: #1d4ed8; }
+    .status-running::before  { background: #3b82f6; animation: pulse 1.2s ease-in-out infinite; }
+
+    .status-stopped  { background: #fffbeb; color: #b45309; }
+    .status-stopped::before  { background: #f59e0b; }
+
+    .status-completed { background: #f0fdf4; color: #15803d; }
+    .status-completed::before { background: #22c55e; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.75); }
+    }
+
+    /* ── Empty state ── */
+    #no-jobs-message {
+      padding: 40px 0;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Web Extraction Manager</h1>
+  <div class="header-spacer"></div>
+  <div class="operator-bar">
+    <label for="operator-select">Operator</label>
+    <select id="operator-select" aria-label="Select operator"></select>
+  </div>
+  <div class="credit-display" aria-label="Credit balance">
+    Credits&nbsp;
+    <strong id="credit-balance" aria-live="polite" aria-atomic="true">—</strong>
+  </div>
+</header>
+
+<main>
+
+  <!-- Register Job -->
+  <section class="card" aria-labelledby="create-job-heading">
+    <div class="card-header">
+      <h2 id="create-job-heading">Register New Job</h2>
+    </div>
+    <form id="create-job-form" novalidate>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="job-url-input">URL</label>
+          <input
+            id="job-url-input"
+            type="url"
+            placeholder="https://example.com/page"
+            required
+            aria-required="true"
+            aria-describedby="create-job-message"
+            autocomplete="off"
+          >
+        </div>
+        <button
+          id="create-job-btn"
+          type="submit"
+          class="btn-primary"
+          style="align-self: flex-end"
+        >Register Job</button>
+      </div>
+    </form>
+    <div
+      id="create-job-message"
+      class="msg"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    ></div>
+  </section>
+
+  <!-- Job List -->
+  <section class="card" aria-labelledby="jobs-heading">
+    <div class="card-header">
+      <h2 id="jobs-heading">Jobs</h2>
+      <button
+        id="refresh-jobs-btn"
+        class="btn-secondary"
+        type="button"
+        aria-label="Refresh job list"
+      >Refresh</button>
+    </div>
+
+    <div
+      id="jobs-message"
+      class="msg"
+      role="alert"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <p id="no-jobs-message" hidden>No jobs registered for this operator yet.</p>
+
+    <div class="table-wrapper">
+      <table id="jobs-table" aria-label="Job list" hidden>
+        <thead>
+          <tr>
+            <th scope="col" class="col-id">Job ID</th>
+            <th scope="col" class="col-url">URL</th>
+            <th scope="col" class="col-status">Status</th>
+            <th scope="col" class="col-pages">Pages</th>
+            <th scope="col" class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="jobs-list"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  'use strict';
+
+  const OPERATORS = ['alice', 'bob', 'carol', 'dave', 'eve'];
+
+  let currentOperator = OPERATORS[0];
+  let pollTimer = null;
+
+  // ── Bootstrap ────────────────────────────────────────────────────────────────
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  function init() {
+    const sel = document.getElementById('operator-select');
+    for (const op of OPERATORS) {
+      const opt = document.createElement('option');
+      opt.value = op;
+      opt.textContent = op.charAt(0).toUpperCase() + op.slice(1);
+      sel.appendChild(opt);
+    }
+
+    sel.addEventListener('change', onOperatorChange);
+    document.getElementById('create-job-form').addEventListener('submit', onCreateJob);
+    document.getElementById('refresh-jobs-btn').addEventListener('click', () => {
+      clearMsg('jobs-message');
+      loadAll();
+    });
+
+    loadAll();
+  }
+
+  // ── Operator change ──────────────────────────────────────────────────────────
+
+  function onOperatorChange(e) {
+    currentOperator = e.target.value;
+    clearTimeout(pollTimer);
+    pollTimer = null;
+    clearMsg('create-job-message');
+    clearMsg('jobs-message');
+    document.getElementById('credit-balance').textContent = '—';
+    loadAll();
+  }
+
+  // ── Data loading ─────────────────────────────────────────────────────────────
+
+  async function loadAll() {
+    const [, jobs] = await Promise.all([fetchCredits(), fetchJobs()]);
+    schedulePoll(jobs);
+  }
+
+  async function fetchCredits() {
+    try {
+      const res = await fetch(`/api/credits?user_id=${enc(currentOperator)}`);
+      const data = await res.json();
+      document.getElementById('credit-balance').textContent =
+        data.credits !== undefined ? data.credits : '—';
+    } catch {
+      document.getElementById('credit-balance').textContent = '—';
+    }
+  }
+
+  async function fetchJobs() {
+    try {
+      const res = await fetch(`/api/jobs?user_id=${enc(currentOperator)}`);
+      const body = await res.json();
+      const jobs = Array.isArray(body) ? body : [];
+      renderJobs(jobs);
+      return jobs;
+    } catch {
+      showMsg('jobs-message', 'Failed to load jobs — is the server running?', 'error');
+      return [];
+    }
+  }
+
+  // ── Polling ──────────────────────────────────────────────────────────────────
+
+  function schedulePoll(jobs) {
+    clearTimeout(pollTimer);
+    pollTimer = null;
+    if (jobs.some(j => j.status === 'running')) {
+      pollTimer = setTimeout(poll, 2000);
+    }
+  }
+
+  async function poll() {
+    pollTimer = null;
+    const jobs = await fetchJobs();
+    await fetchCredits();
+    schedulePoll(jobs);
+  }
+
+  // ── Job actions ──────────────────────────────────────────────────────────────
+
+  async function startJob(jobId) {
+    clearMsg('jobs-message');
+    try {
+      const res = await fetch(`/api/jobs/${enc(jobId)}/start`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const messages = {
+          402: 'Insufficient credits to start this job.',
+          404: 'Job not found.',
+          409: data.error || 'Cannot start: job limit reached or invalid state.',
+        };
+        showMsg('jobs-message', messages[res.status] || `Error ${res.status}.`, 'error');
+      }
+    } catch {
+      showMsg('jobs-message', 'Network error — is the server running?', 'error');
+    }
+    await loadAll();
+  }
+
+  async function stopJob(jobId) {
+    clearMsg('jobs-message');
+    try {
+      const res = await fetch(`/api/jobs/${enc(jobId)}/stop`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const messages = {
+          404: 'Job not found.',
+          409: data.error || 'Job is not currently running.',
+        };
+        showMsg('jobs-message', messages[res.status] || `Error ${res.status}.`, 'error');
+      }
+    } catch {
+      showMsg('jobs-message', 'Network error — is the server running?', 'error');
+    }
+    await loadAll();
+  }
+
+  async function deleteJob(jobId) {
+    clearMsg('jobs-message');
+    try {
+      const res = await fetch(`/api/jobs/${enc(jobId)}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showMsg('jobs-message', data.error || `Error ${res.status}.`, 'error');
+      }
+    } catch {
+      showMsg('jobs-message', 'Network error — is the server running?', 'error');
+    }
+    await loadAll();
+  }
+
+  function confirmDelete(jobId, actionsDiv) {
+    actionsDiv.textContent = '';
+
+    const label = document.createElement('span');
+    label.className = 'confirm-text';
+    label.textContent = 'Delete this job?';
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.id = `btn-delete-confirm-${jobId}`;
+    confirmBtn.dataset.testid = `btn-delete-confirm-${jobId}`;
+    confirmBtn.className = 'btn-delete-confirm';
+    confirmBtn.type = 'button';
+    confirmBtn.textContent = 'Confirm';
+    confirmBtn.setAttribute('aria-label', `Confirm delete job ${jobId.slice(0, 8)}`);
+    confirmBtn.addEventListener('click', () => deleteJob(jobId));
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.id = `btn-delete-cancel-${jobId}`;
+    cancelBtn.dataset.testid = `btn-delete-cancel-${jobId}`;
+    cancelBtn.className = 'btn-secondary';
+    cancelBtn.type = 'button';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.setAttribute('aria-label', `Cancel delete job ${jobId.slice(0, 8)}`);
+    cancelBtn.addEventListener('click', () => loadAll());
+
+    actionsDiv.appendChild(label);
+    actionsDiv.appendChild(confirmBtn);
+    actionsDiv.appendChild(cancelBtn);
+  }
+
+  async function onCreateJob(e) {
+    e.preventDefault();
+    const urlInput = document.getElementById('job-url-input');
+    const url = urlInput.value.trim();
+    clearMsg('create-job-message');
+
+    if (!url) {
+      showMsg('create-job-message', 'Please enter a URL.', 'error');
+      urlInput.focus();
+      return;
+    }
+
+    const createBtn = document.getElementById('create-job-btn');
+    createBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: currentOperator, url }),
+      });
+      if (res.ok) {
+        urlInput.value = '';
+        showMsg('create-job-message', 'Job registered successfully.', 'success');
+        await loadAll();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showMsg('create-job-message', data.error || `Error ${res.status}.`, 'error');
+      }
+    } catch {
+      showMsg('create-job-message', 'Network error — is the server running?', 'error');
+    } finally {
+      createBtn.disabled = false;
+    }
+  }
+
+  // ── Rendering ────────────────────────────────────────────────────────────────
+
+  function renderJobs(jobs) {
+    const tbody = document.getElementById('jobs-list');
+    const table = document.getElementById('jobs-table');
+    const noMsg = document.getElementById('no-jobs-message');
+
+    tbody.textContent = '';   // clear rows safely
+
+    if (jobs.length === 0) {
+      table.hidden = true;
+      noMsg.hidden = false;
+      return;
+    }
+
+    table.hidden = false;
+    noMsg.hidden = true;
+
+    for (const job of jobs) {
+      tbody.appendChild(buildRow(job));
+    }
+  }
+
+  function buildRow(job) {
+    const tr = document.createElement('tr');
+    tr.dataset.jobId = job.id;
+
+    // ID
+    const tdId = document.createElement('td');
+    tdId.className = 'col-id';
+    const code = document.createElement('code');
+    code.className = 'job-id-code';
+    code.title = job.id;
+    code.textContent = job.id.slice(0, 8) + '…';
+    tdId.appendChild(code);
+
+    // URL
+    const tdUrl = document.createElement('td');
+    tdUrl.className = 'col-url';
+    const a = document.createElement('a');
+    a.href = job.url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.title = job.url;
+    a.textContent = job.url;
+    tdUrl.appendChild(a);
+
+    // Status
+    const tdStatus = document.createElement('td');
+    tdStatus.className = 'col-status';
+    const badge = document.createElement('span');
+    badge.id = `job-status-${job.id}`;
+    badge.dataset.testid = `job-status-${job.id}`;
+    badge.className = `status-badge status-${job.status}`;
+    badge.textContent = job.status;
+    badge.setAttribute('aria-label', `Status: ${job.status}`);
+    tdStatus.appendChild(badge);
+
+    // Pages
+    const tdPages = document.createElement('td');
+    tdPages.className = 'col-pages';
+    const pagesSpan = document.createElement('span');
+    pagesSpan.id = `job-pages-${job.id}`;
+    pagesSpan.dataset.testid = `job-pages-${job.id}`;
+    pagesSpan.textContent = job.pages_processed;
+    tdPages.appendChild(pagesSpan);
+
+    // Actions
+    const tdActions = document.createElement('td');
+    tdActions.className = 'col-actions';
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'actions-cell';
+
+    const startBtn = document.createElement('button');
+    startBtn.id = `btn-start-${job.id}`;
+    startBtn.dataset.testid = `btn-start-${job.id}`;
+    startBtn.className = 'btn-start';
+    startBtn.type = 'button';
+    startBtn.textContent = 'Start';
+    startBtn.setAttribute('aria-label', `Start job ${job.id.slice(0, 8)}`);
+    startBtn.disabled = job.status !== 'pending';
+    startBtn.addEventListener('click', () => startJob(job.id));
+
+    const stopBtn = document.createElement('button');
+    stopBtn.id = `btn-stop-${job.id}`;
+    stopBtn.dataset.testid = `btn-stop-${job.id}`;
+    stopBtn.className = 'btn-stop';
+    stopBtn.type = 'button';
+    stopBtn.textContent = 'Stop';
+    stopBtn.setAttribute('aria-label', `Stop job ${job.id.slice(0, 8)}`);
+    stopBtn.disabled = job.status !== 'running';
+    stopBtn.addEventListener('click', () => stopJob(job.id));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.id = `btn-delete-${job.id}`;
+    deleteBtn.dataset.testid = `btn-delete-${job.id}`;
+    deleteBtn.className = 'btn-delete';
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.setAttribute('aria-label', `Delete job ${job.id.slice(0, 8)}`);
+    deleteBtn.addEventListener('click', () => confirmDelete(job.id, actionsDiv));
+
+    actionsDiv.appendChild(startBtn);
+    actionsDiv.appendChild(stopBtn);
+    actionsDiv.appendChild(deleteBtn);
+    tdActions.appendChild(actionsDiv);
+
+    tr.appendChild(tdId);
+    tr.appendChild(tdUrl);
+    tr.appendChild(tdStatus);
+    tr.appendChild(tdPages);
+    tr.appendChild(tdActions);
+
+    return tr;
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+
+  function showMsg(elementId, text, type) {
+    const el = document.getElementById(elementId);
+    el.textContent = text;
+    el.dataset.type = type;
+  }
+
+  function clearMsg(elementId) {
+    const el = document.getElementById(elementId);
+    el.textContent = '';
+    el.dataset.type = '';
+  }
+
+  function enc(str) {
+    return encodeURIComponent(str);
+  }
+</script>
+
+</body>
+</html>

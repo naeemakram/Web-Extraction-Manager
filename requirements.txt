@@ -1,0 +1,7 @@
+flask
+flasgger
+pytest
+pytest-cov
+pytest-html
+pytest-playwright
+playwright

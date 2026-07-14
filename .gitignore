@@ -1,0 +1,39 @@
+# Virtual environment
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# pytest / coverage / reports
+.pytest_cache/
+htmlcov/
+reports/
+.coverage
+coverage.xml
+
+# Playwright
+test-results/
+playwright-report/
+
+# Environment variables
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
