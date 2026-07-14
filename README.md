@@ -4,6 +4,8 @@ A full-stack job management system (register / list / start / stop web extractio
 
 This repo is less "here's an app" and more "here's how I lead quality engineering when an agentic AI is the one typing the code."
 
+**Available for remote QE / SDET opportunities — remote-ready.** Connect with me on [LinkedIn](https://www.linkedin.com/in/naeemakrammalik/).
+
 ---
 
 ## My Role: QE Lead Directing an AI Coding Agent
